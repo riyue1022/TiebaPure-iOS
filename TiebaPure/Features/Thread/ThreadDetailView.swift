@@ -847,7 +847,7 @@ struct ThreadDetailView: View {
             navigationSourceLifecycle.beginParentNavigation()
             openSearchInParent(scope)
         case .localSearch:
-            isStandaloneSearchPresented = true
+             isStandaloneSearchPresented = true
         case .standaloneSearch:
             isStandaloneSearchPresented = true
         }
