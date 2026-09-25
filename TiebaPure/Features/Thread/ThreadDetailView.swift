@@ -838,9 +838,19 @@ struct ThreadDetailView: View {
 
     private func openThreadSearch() {
         let scope = searchScope
+        let systemMajorVersion = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+
+        // On iOS 17, opening nested search through the parent NavigationStack
+        // can freeze the thread/forum screen before the search UI appears.
+        // Bypass that path and present the standalone search directly.
+        if systemMajorVersion == 17 {
+            isStandaloneSearchPresented = true
+            return
+        }
+
         switch NestedSearchOpenRoutingPolicy.destination(
             hasParentHandler: openSearchInParent != nil,
-            systemMajorVersion: ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+            systemMajorVersion: systemMajorVersion
         ) {
         case .parentPath:
             guard let openSearchInParent else { return }
