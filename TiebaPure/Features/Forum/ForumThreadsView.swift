@@ -692,6 +692,17 @@ struct ForumThreadsView: View {
             currentText: "",
             forum: forum
         ) else { return }
+
+        let systemMajorVersion = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+
+        // On iOS 17, avoid both the parent search route and the local
+        // NavigationStack destination. Present the standalone search directly.
+        if systemMajorVersion == 17 {
+            activeSearch = route
+            isStandaloneSearchPresented = true
+            return
+        }
+
         if let openSearchInParent {
             if isReaderSplitListColumn == false {
                 navigationSourceLifecycle.beginParentNavigation()
@@ -700,7 +711,7 @@ struct ForumThreadsView: View {
         } else {
             let destination = NestedSearchOpenRoutingPolicy.destination(
                 hasParentHandler: false,
-                systemMajorVersion: ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+                systemMajorVersion: systemMajorVersion
             )
             if destination == .standaloneSearch {
                 isStandaloneSearchPresented = true
