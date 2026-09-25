@@ -39,6 +39,8 @@ struct ThreadDetailView: View {
     @State private var didApplyDefaultReplySort = false
     @State private var selectedSubpostPost: Post?
     @State private var selectedUser: UserSummary?
+    @State private var isStandaloneUserProfilePresented = false
+    @State private var isStandaloneUserProfilePresented = false
     @State private var selectedForum: Forum?
     @State private var navigationSourceLifecycle = NavigationSourceLifecycleState()
     @State private var userResolutionTask: Task<Void, Never>?
@@ -203,6 +205,26 @@ struct ThreadDetailView: View {
                     ForumThreadsView(account: account, forum: selectedForum)
                         .interactiveNavigationPopStateSync {
                             self.selectedForum = nil
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $isStandaloneUserProfilePresented) {
+                if let selectedUser {
+                    NavigationStack {
+                        UserProfileView(
+                            account: account,
+                            user: selectedUser,
+                            sourceThreadID: threadID,
+                            onReturnToSourceThread: { self.selectedUser = nil }
+                        )
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("关闭") {
+                                    isStandaloneUserProfilePresented = false
+                                    self.selectedUser = nil
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -712,7 +734,7 @@ struct ThreadDetailView: View {
 
     private var selectedUserIsActive: Binding<Bool> {
         Binding(
-            get: { selectedUser != nil },
+            get: { selectedUser != nil && isStandaloneUserProfilePresented == false },
             set: { isActive in
                 if isActive == false { selectedUser = nil }
             }
@@ -1200,6 +1222,9 @@ struct ThreadDetailView: View {
             openUserInParent(user)
         } else {
             selectedUser = user
+            if ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 17 {
+                isStandaloneUserProfilePresented = true
+            }
         }
     }
 
@@ -2995,6 +3020,28 @@ private struct SubpostListSheet: View {
                         }
                     }
                 }
+                .fullScreenCover(isPresented: $isStandaloneUserProfilePresented) {
+                    if let selectedUser {
+                        NavigationStack {
+                            UserProfileView(
+                                account: account,
+                                user: selectedUser,
+                                sourceThreadID: threadID,
+                                onReturnToSourceThread: {
+                                    self.selectedUser = nil
+                                }
+                            )
+                            .toolbar {
+                                ToolbarItem(placement: .cancellationAction) {
+                                    Button("关闭") {
+                                        isStandaloneUserProfilePresented = false
+                                        self.selectedUser = nil
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 .alert("提示", isPresented: likeActionErrorIsPresented) {
                     Button("好", role: .cancel) {
                         likeActionError = nil
@@ -3165,6 +3212,9 @@ private struct SubpostListSheet: View {
         userResolutionError = nil
         guard user.id <= 0 else {
             selectedUser = user
+            if ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 17 {
+                isStandaloneUserProfilePresented = true
+            }
             return
         }
 
@@ -3178,6 +3228,9 @@ private struct SubpostListSheet: View {
                 guard generation == userResolutionGeneration else { return }
                 userResolutionTask = nil
                 selectedUser = resolved
+                if ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 17 {
+                    isStandaloneUserProfilePresented = true
+                }
             } catch {
                 guard generation == userResolutionGeneration else { return }
                 userResolutionTask = nil
