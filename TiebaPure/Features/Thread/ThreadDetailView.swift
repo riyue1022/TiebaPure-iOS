@@ -2816,6 +2816,7 @@ private struct SubpostListSheet: View {
     @State private var requestGeneration = 0
     @State private var loadTask: Task<[Subpost], Error>?
     @State private var selectedUser: UserSummary?
+    @State private var isStandaloneUserProfilePresented = false
     @State private var userResolutionTask: Task<Void, Never>?
     @State private var userResolutionGeneration = 0
     @State private var userResolutionError: String?
