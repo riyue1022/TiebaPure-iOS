@@ -61,6 +61,7 @@ struct UserProfileView: View {
     @State private var selectedThread: UserProfileThreadRoute?
     @State private var selectedForum: Forum?
     @State private var selectedRelationshipKind: UserRelationshipKind?
+    @State private var isStandaloneRelationshipPresented = false
     @State private var navigationSourceLifecycle = NavigationSourceLifecycleState()
     @State private var showsProfileEditor = false
     @State private var pendingProfileEditRequest: UserProfileEditRequest?
@@ -155,6 +156,26 @@ struct UserProfileView: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: $isStandaloneRelationshipPresented) {
+            if let selectedRelationshipKind, let profile {
+                NavigationStack {
+                    UserRelationshipsView(
+                        account: account,
+                        user: profile.user,
+                        kind: selectedRelationshipKind,
+                        navigationTitle: selectedRelationshipKind.navigationTitle
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("关闭") {
+                                isStandaloneRelationshipPresented = false
+                                self.selectedRelationshipKind = nil
+                            }
+                        }
+                    }
+                }
+            }
+        }
         .task {
             guard didLoad == false else { return }
             await reload()
@@ -178,6 +199,7 @@ struct UserProfileView: View {
             selectedThread = nil
             selectedForum = nil
             selectedRelationshipKind = nil
+            isStandaloneRelationshipPresented = false
             showsProfileEditor = false
             pendingProfileEditRequest = nil
             Task { await reload() }
@@ -242,7 +264,7 @@ struct UserProfileView: View {
             LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                 UserProfileHeader(
                     profile: profile,
-                    onOpenRelationship: { selectedRelationshipKind = $0 },
+                    onOpenRelationship: openRelationship,
                     onEditProfile: UserProfileManagementPolicy.canEdit(
                         profile: profile,
                         account: account
@@ -552,6 +574,13 @@ struct UserProfileView: View {
                 if isActive == false { selectedForum = nil }
             }
         )
+    }
+
+    private func openRelationship(_ kind: UserRelationshipKind) {
+        selectedRelationshipKind = kind
+        if ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 17 {
+            isStandaloneRelationshipPresented = true
+        }
     }
 
     private var relationshipIsActive: Binding<Bool> {
