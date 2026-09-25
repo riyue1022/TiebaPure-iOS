@@ -40,7 +40,6 @@ struct ThreadDetailView: View {
     @State private var selectedSubpostPost: Post?
     @State private var selectedUser: UserSummary?
     @State private var isStandaloneUserProfilePresented = false
-    @State private var isStandaloneUserProfilePresented = false
     @State private var selectedForum: Forum?
     @State private var navigationSourceLifecycle = NavigationSourceLifecycleState()
     @State private var userResolutionTask: Task<Void, Never>?
@@ -3112,7 +3111,7 @@ private struct SubpostListSheet: View {
 
     private var selectedUserIsActive: Binding<Bool> {
         Binding(
-            get: { selectedUser != nil },
+            get: { selectedUser != nil && isStandaloneUserProfilePresented == false },
             set: { isActive in
                 if isActive == false { selectedUser = nil }
             }
