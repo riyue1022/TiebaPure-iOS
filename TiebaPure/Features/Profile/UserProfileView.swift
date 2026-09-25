@@ -585,7 +585,7 @@ struct UserProfileView: View {
 
     private var relationshipIsActive: Binding<Bool> {
         Binding(
-            get: { selectedRelationshipKind != nil },
+            get: { selectedRelationshipKind != nil && isStandaloneRelationshipPresented == false },
             set: { isActive in
                 if isActive == false { selectedRelationshipKind = nil }
             }
