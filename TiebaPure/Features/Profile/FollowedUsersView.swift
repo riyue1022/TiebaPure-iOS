@@ -49,6 +49,7 @@ struct UserRelationshipsView: View {
     @State private var requestGeneration = 0
     @State private var loadTask: Task<UserRelationshipPage, Error>?
     @State private var selectedUser: UserSummary?
+    @State private var isStandaloneUserProfilePresented = false
     @State private var navigationSourceLifecycle = NavigationSourceLifecycleState()
 
     init(
@@ -159,6 +160,21 @@ struct UserRelationshipsView: View {
                     }
             }
         }
+        .fullScreenCover(isPresented: $isStandaloneUserProfilePresented) {
+            if let selectedUser {
+                NavigationStack {
+                    UserProfileView(account: account, user: selectedUser)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("关闭") {
+                                    isStandaloneUserProfilePresented = false
+                                    self.selectedUser = nil
+                                }
+                            }
+                        }
+                }
+            }
+        }
         .task {
             guard didLoad == false else { return }
             await reload()
@@ -193,6 +209,9 @@ struct UserRelationshipsView: View {
             openUserInParent(user)
         } else {
             selectedUser = user
+            if ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 17 {
+                isStandaloneUserProfilePresented = true
+            }
         }
     }
 
